@@ -1,0 +1,63 @@
+{
+  "name": "redux-weapp",
+  "version": "0.1.0",
+  "description": "redux for wechat applet",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/xixilive/redux-weapp.git"
+  },
+  "keywords": [
+    "redux",
+    "wechat",
+    "weixin",
+    "state",
+    "store",
+    "applet",
+    "wx"
+  ],
+  "author": "xixilive@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xixilive/redux-weapp/issues"
+  },
+  "homepage": "https://github.com/xixilive/redux-weapp#readme",
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.21.0",
+    "babel-eslint": "^7.1.1",
+    "babel-jest": "^18.0.0",
+    "babel-loader": "^6.2.10",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-stage-0": "^6.16.0",
+    "core-js": "^2.4.1",
+    "eslint": "^3.12.2",
+    "jest-cli": "^18.0.0",
+    "lodash": "^4.17.3",
+    "redux": "^3.6.0",
+    "redux-thunk": "^2.1.0",
+    "rimraf": "^2.5.4",
+    "webpack": "^1.14.0"
+  },
+  "jest": {
+    "automock": false,
+    "bail": false,
+    "transform": {
+      ".js": "<rootDir>/node_modules/babel-jest"
+    },
+    "testPathDirs": [
+      "<rootDir>/__tests__/"
+    ],
+    "testRegex": ".test.js$",
+    "unmockedModulePathPatterns": [
+      "/node_modules/"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  }
+}
