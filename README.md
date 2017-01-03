@@ -1,6 +1,8 @@
-# Redux-based State Management for Wechat applet(微信小程序, weapp)
+# redux-weapp
 
-To connect Redux store with your weapp's App or Page factory.
+[![Build Status](https://travis-ci.org/xixilive/redux-weapp.svg?branch=master)](https://travis-ci.org/xixilive/redux-weapp)
+
+Redux-based State Management for Wechat applet(微信小程序, weapp), to connect Redux store with your weapp's App or Page factory.
 
 ## Install
 
@@ -34,7 +36,7 @@ const app = connect.App(
 )({
   onLaunch(){},
   ...,
-  onStateChange(){
+  onStateChange(nextState){
     // receive state changes here
   }
 })
@@ -58,7 +60,7 @@ const page = connect.Page(
 )({
   onLoad(){},
   ...,
-  onStateChange(){
+  onStateChange(nextState){
     // receive state changes here
   }
 })
