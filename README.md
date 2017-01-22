@@ -7,7 +7,11 @@ Redux-based State Management for Wechat applet(微信小程序, weapp), to conne
 ## Install
 
 ```
-npm i xixilive/redux-weapp --save-dev
+# via Github
+npm install xixilive/redux-weapp --save-dev
+
+# via npm
+npm install redux-weapp --save-dev
 ```
 
 ## Usage
