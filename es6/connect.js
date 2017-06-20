@@ -6,10 +6,12 @@ const listeners = []
 const createListener = (context, mapState, store) => {
   let prevState
   const listener = function(state){
+    prevState = context.props;
     const nextState = mapState(state)
     if(!prevState || !shallowEqual(nextState, prevState)){
       prevState = Object.assign({}, nextState)
       context.onStateChange.call(context, nextState)
+      context.props = prevState;
     }
   }
 

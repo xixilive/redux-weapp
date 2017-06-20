@@ -52,7 +52,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -70,9 +70,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = _connect2.default;
 	module.exports = exports['default'];
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -90,10 +90,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	var createListener = function createListener(context, mapState, store) {
 	  var prevState = void 0;
 	  var listener = function listener(state) {
+	    prevState = context.props;
 	    var nextState = mapState(state);
 	    if (!prevState || !(0, _utils.shallowEqual)(nextState, prevState)) {
 	      prevState = Object.assign({}, nextState);
 	      context.onStateChange.call(context, nextState);
+	      context.props = prevState;
 	    }
 	  };
 
@@ -229,9 +231,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	module.exports = exports['default'];
 
-/***/ },
+/***/ }),
 /* 2 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -291,7 +293,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.shallowEqual = shallowEqual;
 	exports.callInContext = callInContext;
 
-/***/ }
+/***/ })
 /******/ ])
 });
 ;
