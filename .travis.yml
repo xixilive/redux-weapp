@@ -9,6 +9,7 @@ script:
 branches:
   only:
     - master
+    - /^greenkeeper/.*$/
 cache:
   directories:
   - $HOME/.npm
