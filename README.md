@@ -1,5 +1,7 @@
 # redux-weapp
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/xixilive/redux-weapp.svg)](https://greenkeeper.io/)
+
 [![Build Status](https://travis-ci.org/xixilive/redux-weapp.svg?branch=master)](https://travis-ci.org/xixilive/redux-weapp)
 
 Redux-based State Management for Wechat applet(微信小程序, weapp), to connect Redux store with your weapp's App or Page factory.
