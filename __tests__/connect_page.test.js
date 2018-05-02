@@ -4,7 +4,7 @@ import {store, bindActionCreators, changePageName} from './helper'
 const connectPage = (onStateChange) => {
   return connect.Page(
     store,
-    (state) => ({name: state.page.name}),
+    (state, options) => ({name: state.page.name, ...options}),
     (dispatch) => ({changeName: bindActionCreators(changePageName, dispatch)})
   )({onStateChange})
 }
@@ -30,26 +30,26 @@ describe('connect ', () => {
     expect(store.getState().page.name).toBe('new page')
     expect(onStateChange).not.toHaveBeenCalled()
 
-    page.onLoad()
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page'}) //calls: 1
+    page.onLoad({key: 'value'})
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page', key: 'value'}) //calls: 1
 
     page.changeName('new page2')
     expect(store.getState().page.name).toBe('new page2')
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page2'})//calls: 2
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page2', key: 'value'})//calls: 2
 
     page.onHide() // will pause to notify states change
     page.changeName('new page3')
     expect(store.getState().page.name).toBe('new page3')
     expect(onStateChange).toHaveBeenCalledTimes(2)
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page2'})
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page2', key: 'value'})
 
     page.onShow()
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page3'}) // resumed from inactive
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page3', key: 'value'}) // resumed from inactive
 
     page.changeName('new page4')
     expect(store.getState().page.name).toBe('new page4')
     expect(onStateChange).toHaveBeenCalledTimes(4)
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page4'})
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page4', key: 'value'})
 
     page.changeName('new page4') //state not change
     expect(onStateChange).toHaveBeenCalledTimes(4)

@@ -3,11 +3,11 @@ import {isFn, noop, shallowEqual, callInContext} from './utils'
 let subscription = null
 const listeners = []
 
-const createListener = (context, mapState, store) => {
+const createListener = (context, store, mapState, initOptions = {}) => {
   let prevState
-  const listener = function(state){
+  const listener = function(state, ...args){
     prevState = context.props;
-    const nextState = mapState(state)
+    const nextState = mapState(state, initOptions, ...args)
     if(!prevState || !shallowEqual(nextState, prevState)){
       prevState = Object.assign({}, nextState)
       context.onStateChange.call(context, nextState)
@@ -38,7 +38,7 @@ const injectChangeListenerStatus = (store, handler, listener, isActive) => {
       const prev = listener.isActive
       listener.isActive = isActive
       if(!prev && isActive){
-        listener(store.getState())
+        listener(store.getState(), ...arguments)
       }
     }
     return callInContext(handler, this, arguments)
@@ -74,8 +74,8 @@ const connectApp = (store, mapState, mapDispatch) => {
     const {onLaunch, onShow, onHide, onStateChange} = config
 
     return {
-      onLaunch: function(){
-        const listener = createListener(this, mapState, store)
+      onLaunch: function(options){
+        const listener = createListener(this, store, mapState, options)
         listener.index = listeners.push(listener) - 1
 
         this.onShow = injectChangeListenerStatus(store, onShow, listener, true)
@@ -100,8 +100,8 @@ const connectPage = (store, mapState, mapDispatch) => {
     const {onLoad, onUnload, onShow, onHide, onStateChange} = config
 
     return {
-      onLoad: function(){
-        const listener = createListener(this, mapState, store)
+      onLoad: function(options){
+        const listener = createListener(this, store, mapState, options)
         listener.index = listeners.push(listener) - 1
 
         this.onUnload = function(){

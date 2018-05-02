@@ -32,13 +32,13 @@ import connect from 'redux-weapp'
 
 const app = connect.App(
   store,
-  //to map next state into your app
-  (state) => ({}),
+  //to map next state into your app, with a params argument which passed on `App.onLaunch` life-cycle
+  (state, params) => ({}),
   // to bind dispatch with your action,
   // and this binding will be injected into your app
   (dispatch) => ({doSomething: bindActionCreators(todo, dispatch)})
 )({
-  onLaunch(){},
+  onLaunch(options){},
   ...,
   onStateChange(nextState){
     // receive state changes here
@@ -56,13 +56,13 @@ import connect from 'redux-weapp'
 
 const page = connect.Page(
   store,
-  //to map next state into your app
-  (state) => ({}),
+  //to map next state into your app, with a params argument which passed on `Page.onLoad` life-cycle
+  (state, params) => ({}),
   // to bind dispatch with your action,
   // and this binding will be injected into your app
   (dispatch) => ({doSomething: bindActionCreators(todo, dispatch)})
 )({
-  onLoad(){},
+  onLoad(options){},
   ...,
   onStateChange(nextState){
     // receive state changes here

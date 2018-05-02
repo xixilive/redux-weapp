@@ -87,11 +87,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	var subscription = null;
 	var listeners = [];
 
-	var createListener = function createListener(context, mapState, store) {
+	var createListener = function createListener(context, store, mapState) {
+	  var initOptions = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
 	  var prevState = void 0;
 	  var listener = function listener(state) {
 	    prevState = context.props;
-	    var nextState = mapState(state);
+
+	    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	      args[_key - 1] = arguments[_key];
+	    }
+
+	    var nextState = mapState.apply(undefined, [state, initOptions].concat(args));
 	    if (!prevState || !(0, _utils.shallowEqual)(nextState, prevState)) {
 	      prevState = Object.assign({}, nextState);
 	      context.onStateChange.call(context, nextState);
@@ -128,7 +135,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var prev = listener.isActive;
 	      listener.isActive = isActive;
 	      if (!prev && isActive) {
-	        listener(store.getState());
+	        listener.apply(undefined, [store.getState()].concat(Array.prototype.slice.call(arguments)));
 	      }
 	    }
 	    return (0, _utils.callInContext)(handler, this, arguments);
@@ -168,8 +175,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	    return {
-	      onLaunch: function onLaunch() {
-	        var listener = createListener(this, mapState, store);
+	      onLaunch: function onLaunch(options) {
+	        var listener = createListener(this, store, mapState, options);
 	        listener.index = listeners.push(listener) - 1;
 
 	        this.onShow = injectChangeListenerStatus(store, onShow, listener, true);
@@ -199,8 +206,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	    return {
-	      onLoad: function onLoad() {
-	        var listener = createListener(this, mapState, store);
+	      onLoad: function onLoad(options) {
+	        var listener = createListener(this, store, mapState, options);
 	        listener.index = listeners.push(listener) - 1;
 
 	        this.onUnload = function () {

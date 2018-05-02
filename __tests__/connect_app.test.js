@@ -4,7 +4,7 @@ import {store, bindActionCreators, changeAppName} from './helper'
 const connectApp = (onStateChange) => {
   return connect.App(
     store,
-    (state) => ({name: state.app.name}),
+    (state, options) => ({name: state.app.name, ...options}),
     (dispatch) => ({changeName: bindActionCreators(changeAppName, dispatch)})
   )({onStateChange})
 }
@@ -28,26 +28,26 @@ describe('connect ', () => {
     expect(store.getState().app.name).toBe('new app')
     expect(onStateChange).not.toHaveBeenCalled()
 
-    app.onLaunch()
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new app'}) //calls: 1
+    app.onLaunch({key: 'value'})
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new app', key: 'value'}) //calls: 1
 
     app.changeName('new app2')
     expect(store.getState().app.name).toBe('new app2')
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new app2'})//calls: 2
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new app2', key: 'value'})//calls: 2
 
     app.onHide() // will pause to notify states change
     app.changeName('new app3')
     expect(store.getState().app.name).toBe('new app3')
     expect(onStateChange).toHaveBeenCalledTimes(2)
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new app2'})
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new app2', key: 'value'})
 
     app.onShow()
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new app3'}) // resumed from inactive
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new app3', key: 'value'}) // resumed from inactive
 
     app.changeName('new app4')
     expect(store.getState().app.name).toBe('new app4')
     expect(onStateChange).toHaveBeenCalledTimes(4)
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new app4'})
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new app4', key: 'value'})
 
     app.changeName('new app4') //state not change
     expect(onStateChange).toHaveBeenCalledTimes(4)
