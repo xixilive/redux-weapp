@@ -40,7 +40,7 @@ const app = connect.App(
 )({
   onLaunch(options){},
   ...,
-  onStateChange(nextState){
+  onStateChange(nextState, prevState){
     // receive state changes here
   }
 })
@@ -64,7 +64,7 @@ const page = connect.Page(
 )({
   onLoad(options){},
   ...,
-  onStateChange(nextState){
+  onStateChange(nextState, prevState){
     // receive state changes here
   }
 })

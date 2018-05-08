@@ -31,25 +31,25 @@ describe('connect ', () => {
     expect(onStateChange).not.toHaveBeenCalled()
 
     page.onLoad({key: 'value'})
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page', key: 'value'}) //calls: 1
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page', key: 'value'}, {}) //calls: 1
 
     page.changeName('new page2')
     expect(store.getState().page.name).toBe('new page2')
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page2', key: 'value'})//calls: 2
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page2', key: 'value'}, {name: 'new page', key: 'value'})//calls: 2
 
     page.onHide() // will pause to notify states change
     page.changeName('new page3')
     expect(store.getState().page.name).toBe('new page3')
     expect(onStateChange).toHaveBeenCalledTimes(2)
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page2', key: 'value'})
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page2', key: 'value'}, {name: 'new page', key: 'value'})
 
     page.onShow()
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page3', key: 'value'}) // resumed from inactive
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page3', key: 'value'}, {name: 'new page2', key: 'value'}) // resumed from inactive
 
     page.changeName('new page4')
     expect(store.getState().page.name).toBe('new page4')
     expect(onStateChange).toHaveBeenCalledTimes(4)
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page4', key: 'value'})
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page4', key: 'value'}, {name: 'new page3', key: 'value'})
 
     page.changeName('new page4') //state not change
     expect(onStateChange).toHaveBeenCalledTimes(4)
@@ -60,7 +60,7 @@ describe('connect ', () => {
 
     page.onLoad()
     expect(onStateChange).toHaveBeenCalledTimes(5)
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page5'})
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page5'}, {})
   })
 
   it('store with Page without mapState function', () => {

@@ -1,17 +1,16 @@
-import {isFn, noop, shallowEqual, callInContext} from './utils'
+import {isFn, noop, shallowEqual, clone, callInContext} from './utils'
 
 let subscription = null
 const listeners = []
 
 const createListener = (context, store, mapState, initOptions = {}) => {
-  let prevState
+  let prevState, tmp
   const listener = function(state, ...args){
-    prevState = context.props;
     const nextState = mapState(state, initOptions, ...args)
     if(!prevState || !shallowEqual(nextState, prevState)){
-      prevState = Object.assign({}, nextState)
-      context.onStateChange.call(context, nextState)
-      context.props = prevState;
+      tmp = clone(nextState)
+      context.onStateChange.call(context, nextState, clone(prevState) || {})
+      prevState = tmp
     }
   }
 

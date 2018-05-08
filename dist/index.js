@@ -90,19 +90,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	var createListener = function createListener(context, store, mapState) {
 	  var initOptions = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
-	  var prevState = void 0;
+	  var prevState = void 0,
+	      tmp = void 0;
 	  var listener = function listener(state) {
-	    prevState = context.props;
-
 	    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 	      args[_key - 1] = arguments[_key];
 	    }
 
 	    var nextState = mapState.apply(undefined, [state, initOptions].concat(args));
 	    if (!prevState || !(0, _utils.shallowEqual)(nextState, prevState)) {
-	      prevState = Object.assign({}, nextState);
-	      context.onStateChange.call(context, nextState);
-	      context.props = prevState;
+	      tmp = (0, _utils.clone)(nextState);
+	      context.onStateChange.call(context, nextState, (0, _utils.clone)(prevState) || {});
+	      prevState = tmp;
 	    }
 	  };
 
@@ -258,6 +257,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var isFn = function isFn(fn) {
 	  return 'function' === typeof fn;
 	};
+	var typeOf = function typeOf(v) {
+	  return (proto.toString.call(v).match(/^\[object (.+?)\]$/) || [])[1];
+	};
 
 	var shallowEqual = function shallowEqual(a, b) {
 	  if (a === b) {
@@ -283,6 +285,48 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return na === nb;
 	};
 
+	// Clone JSON serializable object recursive
+	// Because a store state should/must be JSON serializable
+	var clonable = function clonable(target) {
+	  switch (typeOf(target)) {
+	    case 'Object':
+	    case 'Array':
+	    case 'Date':
+	      return true;
+	    default:
+	      return false;
+	  }
+	};
+
+	var clone = function clone(target) {
+	  if (Object(target) !== target) {
+	    //primitives
+	    return target;
+	  }
+
+	  if (!clonable(target)) {
+	    return;
+	  }
+
+	  if (target instanceof Array) {
+	    var newArr = [];
+	    for (var i = 0; i < target.length; i++) {
+	      newArr[i] = clone(target[i]);
+	    }
+	    return newArr;
+	  }
+
+	  if (target instanceof Date) {
+	    return new Date(target.getTime());
+	  }
+
+	  var result = {};
+	  for (var k in target) {
+	    result[k] = clone(target[k]);
+	  }
+	  return result;
+	};
+
 	var callInContext = function callInContext(fn, context) {
 	  for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
 	    args[_key - 2] = arguments[_key];
@@ -298,6 +342,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.isFn = isFn;
 	exports.noop = noop;
 	exports.shallowEqual = shallowEqual;
+	exports.clone = clone;
 	exports.callInContext = callInContext;
 
 /***/ })
