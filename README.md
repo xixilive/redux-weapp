@@ -160,4 +160,6 @@ The listener will be remove when `onUnload` function has called.
 
 ## Example
 
+[wxweather](https://github.com/xixilive/wxweather)
+
 ![Example Screen Shot](https://raw.githubusercontent.com/xixilive/wxweather/master/doc/screenshot.jpg)
