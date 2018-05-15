@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    var nextState = mapState.apply(undefined, [state, initOptions].concat(args));
-	    if (!prevState || !(0, _utils.shallowEqual)(nextState, prevState)) {
+	    if (!prevState || !(0, _utils.deepEqual)(nextState, prevState)) {
 	      tmp = (0, _utils.clone)(nextState);
 	      context.onStateChange.call(context, nextState, (0, _utils.clone)(prevState) || {});
 	      prevState = tmp;
@@ -247,6 +247,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	var proto = Object.prototype;
@@ -261,28 +263,77 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return (proto.toString.call(v).match(/^\[object (.+?)\]$/) || [])[1];
 	};
 
-	var shallowEqual = function shallowEqual(a, b) {
+	var deepEqual = function deepEqual(a, b) {
 	  if (a === b) {
 	    return true;
 	  }
 
-	  var na = 0,
-	      nb = 0;
+	  if (a && b && (typeof a === 'undefined' ? 'undefined' : _typeof(a)) == 'object' && (typeof b === 'undefined' ? 'undefined' : _typeof(b)) == 'object') {
+	    var arrA = typeOf(a) === 'Array',
+	        arrB = typeOf(b) === 'Array';
+	    var i = void 0,
+	        length = void 0,
+	        key = void 0;
 
-	  for (var k in a) {
-	    if (hasOwnProp.call(a, k) && a[k] !== b[k]) {
+	    if (arrA && arrB) {
+	      length = a.length;
+	      if (length != b.length) {
+	        return false;
+	      }
+	      for (i = length; i-- !== 0;) {
+	        if (!deepEqual(a[i], b[i])) {
+	          return false;
+	        }
+	      }
+	      return true;
+	    }
+
+	    if (arrA != arrB) {
 	      return false;
 	    }
-	    na++;
-	  }
 
-	  for (var _k in b) {
-	    if (hasOwnProp.call(b, _k)) {
-	      nb++;
+	    var dateA = a instanceof Date;
+	    var dateB = b instanceof Date;
+	    if (dateA != dateB) {
+	      return false;
 	    }
+	    if (dateA && dateB) {
+	      return a.getTime() == b.getTime();
+	    }
+
+	    var regexpA = a instanceof RegExp,
+	        regexpB = b instanceof RegExp;
+	    if (regexpA != regexpB) {
+	      return false;
+	    }
+	    if (regexpA && regexpB) {
+	      return a.toString() == b.toString();
+	    }
+
+	    var keys = Object.keys(a);
+	    length = keys.length;
+
+	    if (length !== Object.keys(b).length) {
+	      return false;
+	    }
+
+	    for (i = length; i-- !== 0;) {
+	      if (!hasOwnProp.call(b, keys[i])) {
+	        return false;
+	      }
+	    }
+
+	    for (i = length; i-- !== 0;) {
+	      key = keys[i];
+	      if (!deepEqual(a[key], b[key])) {
+	        return false;
+	      }
+	    }
+
+	    return true;
 	  }
 
-	  return na === nb;
+	  return a !== a && b !== b;
 	};
 
 	// Clone JSON serializable object recursive
@@ -341,7 +392,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports.isFn = isFn;
 	exports.noop = noop;
-	exports.shallowEqual = shallowEqual;
+	exports.deepEqual = deepEqual;
 	exports.clone = clone;
 	exports.callInContext = callInContext;
 

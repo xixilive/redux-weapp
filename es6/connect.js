@@ -1,4 +1,4 @@
-import {isFn, noop, shallowEqual, clone, callInContext} from './utils'
+import {isFn, noop, deepEqual, clone, callInContext} from './utils'
 
 let subscription = null
 const listeners = []
@@ -7,7 +7,7 @@ const createListener = (context, store, mapState, initOptions = {}) => {
   let prevState, tmp
   const listener = function(state, ...args){
     const nextState = mapState(state, initOptions, ...args)
-    if(!prevState || !shallowEqual(nextState, prevState)){
+    if(!prevState || !deepEqual(nextState, prevState)){
       tmp = clone(nextState)
       context.onStateChange.call(context, nextState, clone(prevState) || {})
       prevState = tmp

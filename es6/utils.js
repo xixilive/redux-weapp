@@ -8,26 +8,73 @@ const typeOf = (v) => {
   return (proto.toString.call(v).match(/^\[object (.+?)\]$/) || [])[1]
 }
 
-const shallowEqual = (a, b) => {
+const deepEqual = (a, b) => {
   if (a === b){
     return true
   }
 
-  let [na, nb] = [0, 0]
-  for(let k in a){
-    if(hasOwnProp.call(a, k) && a[k] !== b[k]){
+  if (a && b && typeof a == 'object' && typeof b == 'object') {
+    const arrA = typeOf(a) === 'Array', arrB = typeOf(b) === 'Array'
+    let i, length, key
+
+    if (arrA && arrB) {
+      length = a.length
+      if (length != b.length){
+        return false
+      }
+      for (i = length; i-- !== 0;){
+        if (!deepEqual(a[i], b[i])){
+          return false
+        }
+      }
+      return true
+    }
+
+    if (arrA != arrB){
       return false
     }
-    na++
-  }
 
-  for(let k in b){
-    if(hasOwnProp.call(b, k)){
-      nb++
+    const dateA = a instanceof Date
+    const dateB = b instanceof Date
+    if (dateA != dateB){
+      return false
     }
+    if (dateA && dateB){
+      return a.getTime() == b.getTime()
+    }
+
+    const regexpA = (a instanceof RegExp), regexpB = (b instanceof RegExp)
+    if (regexpA != regexpB){
+      return false
+    }
+    if (regexpA && regexpB){
+      return a.toString() == b.toString()
+    }
+
+    const keys = Object.keys(a)
+    length = keys.length
+
+    if (length !== Object.keys(b).length){
+      return false
+    }
+
+    for (i = length; i-- !== 0;){
+      if (!hasOwnProp.call(b, keys[i])){
+        return false
+      }
+    }
+
+    for (i = length; i-- !== 0;) {
+      key = keys[i]
+      if (!deepEqual(a[key], b[key])){
+        return false
+      }
+    }
+
+    return true
   }
 
-  return na === nb
+  return a !== a && b !== b
 }
 
 // Clone JSON serializable object recursive
@@ -80,5 +127,5 @@ const callInContext = (fn, context, ...args) => {
 }
 
 export {
-  isFn, noop, shallowEqual, clone, callInContext
+  isFn, noop, deepEqual, clone, callInContext
 }
