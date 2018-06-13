@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/xixilive/redux-weapp.svg?branch=master)](https://travis-ci.org/xixilive/redux-weapp)
 
-Redux-based State Management for Wechat applet(微信小程序, weapp), to connect Redux store with your weapp's App or Page factory. [Simple Example](https://github.com/xixilive/wxweather)
+Redux-based State Management for Wechat applet(微信小程序, weapp), to connect Redux store with your weapp's App or Page factory. 
 
 ## Install
 
@@ -16,13 +16,14 @@ npm install redux-weapp --save-dev
 
 ## Usage
 
+Before trying these demo code snippets, you should/must be experienced in weapp modulize development. 
+[微信小程序模块化开发实践](https://gist.github.com/xixilive/5bf1cde16f898faff2e652dbd08cf669)
+
 ```js
 // Redux store
-import {createStore, bindActionCreators} from 'redux'
+import {createStore} from 'redux'
 //create your Redux store
 const store = createStore(...)
-// Define actions
-const todo = () => ({type: 'SOMETHING'})
 ```
 
 ## connect to weapp App
@@ -33,39 +34,90 @@ import connect from 'redux-weapp'
 const app = connect.App(
   store,
   //to map next state into your app, with a params argument which passed on `App.onLaunch` life-cycle
-  (state, params) => ({}),
+  (state, params) => {
+    // return an object, which will be passed to onStateChange function
+    return {}
+  },
   // to bind dispatch with your action,
   // and this binding will be injected into your app
-  (dispatch) => ({doSomething: bindActionCreators(todo, dispatch)})
+  (dispatch) => {
+    // return an object, which can be invoked within app context(this scope).
+    return {}
+  }
 )({
   onLaunch(options){},
   ...,
-  onStateChange(nextState, prevState){
-    // receive state changes here
+  onStateChange(nextState){
+    // receive state changes
   }
 })
 
-// start your app with connect config
+// launch your app
 App(app)
 ```
 
 ### connect to weapp Page
 
+Assume we have a [store shape](https://redux.js.org/basics/store) as following:
+
+```json
+{
+  todos: [Todo:Object]
+}
+```
+
+and Each todo element in store is an object with schema:
+
+```
+{
+  title: String,
+  complete: Boolean
+}
+```
+
+and we have defined an action creator([FSA](https://github.com/redux-utilities/flux-standard-action)) as:
+
 ```js
+const fetchTodosAction = (status) => ({type: 'FETCH_TODOS', filter: {status}})
+```
+
+Ok, let's connect store to todo-list page.
+
+```js
+// 
 import connect from 'redux-weapp'
 
 const page = connect.Page(
   store,
-  //to map next state into your app, with a params argument which passed on `Page.onLoad` life-cycle
-  (state, params) => ({}),
+  //to map next-state into your page, with a params argument which passed on `Page.onLoad` life-cycle
+  (state, params) => ({
+    todos: state.todos
+  }),
   // to bind dispatch with your action,
   // and this binding will be injected into your app
-  (dispatch) => ({doSomething: bindActionCreators(todo, dispatch)})
+  (dispatch) => ({
+    fetchTodos(status = 'inprogress'){
+      // dispatch an action
+      dispatch(fetchTodosAction(status))
+    }
+  })
 )({
-  onLoad(options){},
-  ...,
-  onStateChange(nextState, prevState){
-    // receive state changes here
+  onLoad(options){
+    this.fetchTodos()
+  },
+  
+  onStateChange(nextState){
+    const {todos} = nextState
+    this.setState({todos})
+  },
+
+  // view interactions
+  onTapCompleteTab(){
+    this.fetchTodos('complete')
+  },
+
+  onTapInProgressTab(){
+    this.fetchTodos()
   }
 })
 
@@ -73,7 +125,7 @@ const page = connect.Page(
 Page(page)
 ```
 
-## High-order connect API
+## connect API
 
 ### connect.App
 
@@ -81,14 +133,14 @@ Page(page)
 //define app connect function
 factory = connect.App(
   store:ReduxStore, 
-  mapStateToProps:Function(state, appLaunchOptions), 
-  mapDispatchToProps:Function(dispatch)
+  mapStateToProps:Function(state:Object, appLaunchOptions:Object), 
+  mapDispatchToProps:Function(dispatch:Function)
 ):Function
 
 //build a store-binding app config object
 config = factory({
   onLaunch(options:Object){},
-  onStateChange(),
+  onStateChange(nextState:Object, prevState:Object),
   ...
 }):Object
 
@@ -100,16 +152,16 @@ App(config)
 
 ```ts
 //define page connect function
-connect.Page(
+factory = connect.Page(
   store:ReduxStore, 
-  mapStateToProps:Function, 
-  mapDispatchToProps:Function
+  mapStateToProps:Function(state:Object, pageLoadOptions:Object), 
+  mapDispatchToProps:Function(dispatch:Function)
 ):Function
 
 //build a store-binding page config object
 config = factory({
   onLoad(options:Object){},
-  onStateChange(),
+  onStateChange(nextState:Object, prevState:Object)
   ...
 }):Object
 
@@ -158,8 +210,6 @@ An active listener will be set to `inactive` when `onHide` function has called.
 
 The listener will be remove when `onUnload` function has called.
 
-## Example
+----
 
-[wxweather](https://github.com/xixilive/wxweather)
-
-![Example Screen Shot](https://raw.githubusercontent.com/xixilive/wxweather/master/doc/screenshot.jpg)
+Good luck!
