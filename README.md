@@ -236,7 +236,3 @@ onStateChange(nextState:Object, prevState:Object):void
 ```
 
 Good luck! 
-
-### QQ交流群：698031344
-
-![QQ交流群_698031344](./doc_assets/qq_group.jpg)
