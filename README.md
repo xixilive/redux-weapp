@@ -1,6 +1,11 @@
 # redux-weapp
 
-[![Build Status](https://travis-ci.org/xixilive/redux-weapp.svg?branch=master)](https://travis-ci.org/xixilive/redux-weapp)
+![Travis](https://img.shields.io/travis/xixilive/redux-weapp/master.svg)
+![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/redux-weapp.svg)
+![npm](https://img.shields.io/npm/dt/redux-weapp.svg)
+![NpmVersion](https://img.shields.io/npm/v/redux-weapp.svg)
+[![Known Vulnerabilities](https://snyk.io/test/github/xixilive/redux-weapp/badge.svg?targetFile=package.json)](https://snyk.io/test/github/xixilive/redux-weapp?targetFile=package.json)
+![NpmLicense](https://img.shields.io/npm/l/redux-weapp.svg)
 
 基于 [Redux](https://redux.js.org/) 的微信小程序状态管理, 将Redux store连接到小程序App和Page. 
 

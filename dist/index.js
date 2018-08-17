@@ -259,8 +259,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var isFn = function isFn(fn) {
 	  return 'function' === typeof fn;
 	};
+
 	var typeOf = function typeOf(v) {
-	  return (proto.toString.call(v).match(/^\[object (.+?)\]$/) || [])[1];
+	  var t = proto.toString.call(v); // [object XXX]
+	  return t.substr(8, t.length - 9);
 	};
 
 	var deepEqual = function deepEqual(a, b) {
@@ -271,16 +273,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (a && b && (typeof a === 'undefined' ? 'undefined' : _typeof(a)) == 'object' && (typeof b === 'undefined' ? 'undefined' : _typeof(b)) == 'object') {
 	    var arrA = typeOf(a) === 'Array',
 	        arrB = typeOf(b) === 'Array';
-	    var i = void 0,
-	        length = void 0,
-	        key = void 0;
+	    if (arrA !== arrB) {
+	      return false;
+	    }
 
+	    var i = void 0;
 	    if (arrA && arrB) {
-	      length = a.length;
-	      if (length != b.length) {
+	      if (a.length !== b.length) {
 	        return false;
 	      }
-	      for (i = length; i-- !== 0;) {
+
+	      i = a.length;
+	      while (i--) {
 	        if (!deepEqual(a[i], b[i])) {
 	          return false;
 	        }
@@ -288,44 +292,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return true;
 	    }
 
-	    if (arrA != arrB) {
+	    var dateA = a instanceof Date,
+	        dateB = b instanceof Date;
+	    if (dateA !== dateB) {
 	      return false;
 	    }
 
-	    var dateA = a instanceof Date;
-	    var dateB = b instanceof Date;
-	    if (dateA != dateB) {
-	      return false;
-	    }
 	    if (dateA && dateB) {
-	      return a.getTime() == b.getTime();
+	      return a.getTime() === b.getTime();
 	    }
 
 	    var regexpA = a instanceof RegExp,
 	        regexpB = b instanceof RegExp;
-	    if (regexpA != regexpB) {
+	    if (regexpA !== regexpB) {
 	      return false;
 	    }
 	    if (regexpA && regexpB) {
-	      return a.toString() == b.toString();
+	      return a.toString() === b.toString();
 	    }
 
 	    var keys = Object.keys(a);
-	    length = keys.length;
-
-	    if (length !== Object.keys(b).length) {
+	    i = keys.length;
+	    if (i !== Object.keys(b).length) {
 	      return false;
 	    }
 
-	    for (i = length; i-- !== 0;) {
+	    // check own props
+	    while (i--) {
 	      if (!hasOwnProp.call(b, keys[i])) {
 	        return false;
 	      }
 	    }
 
-	    for (i = length; i-- !== 0;) {
-	      key = keys[i];
-	      if (!deepEqual(a[key], b[key])) {
+	    i = keys.length;
+	    while (i--) {
+	      if (!deepEqual(a[keys[i]], b[keys[i]])) {
 	        return false;
 	      }
 	    }
@@ -361,7 +362,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  if (target instanceof Array) {
 	    var newArr = [];
-	    for (var i = 0; i < target.length; i++) {
+	    for (var i = 0, len = target.length; i < len; i++) {
 	      newArr[i] = clone(target[i]);
 	    }
 	    return newArr;

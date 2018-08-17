@@ -4,8 +4,10 @@ const hasOwnProp = proto.hasOwnProperty
 const noop = function(){}
 
 const isFn = (fn) => ('function' === typeof fn)
+
 const typeOf = (v) => {
-  return (proto.toString.call(v).match(/^\[object (.+?)\]$/) || [])[1]
+  let t = proto.toString.call(v) // [object XXX]
+  return t.substr(8, t.length - 9)
 }
 
 const deepEqual = (a, b) => {
@@ -15,58 +17,58 @@ const deepEqual = (a, b) => {
 
   if (a && b && typeof a == 'object' && typeof b == 'object') {
     const arrA = typeOf(a) === 'Array', arrB = typeOf(b) === 'Array'
-    let i, length, key
+    if (arrA !== arrB){
+      return false
+    }
 
+    let i
     if (arrA && arrB) {
-      length = a.length
-      if (length != b.length){
+      if (a.length !== b.length){
         return false
       }
-      for (i = length; i-- !== 0;){
+
+      i = a.length
+      while (i--){
         if (!deepEqual(a[i], b[i])){
           return false
         }
       }
       return true
     }
-
-    if (arrA != arrB){
+    
+    const dateA = (a instanceof Date), dateB = (b instanceof Date)
+    if (dateA !== dateB){
       return false
     }
 
-    const dateA = a instanceof Date
-    const dateB = b instanceof Date
-    if (dateA != dateB){
-      return false
-    }
     if (dateA && dateB){
-      return a.getTime() == b.getTime()
+      return a.getTime() === b.getTime()
     }
 
     const regexpA = (a instanceof RegExp), regexpB = (b instanceof RegExp)
-    if (regexpA != regexpB){
+    if (regexpA !== regexpB){
       return false
     }
     if (regexpA && regexpB){
-      return a.toString() == b.toString()
+      return a.toString() === b.toString()
     }
 
     const keys = Object.keys(a)
-    length = keys.length
-
-    if (length !== Object.keys(b).length){
+    i = keys.length
+    if (i !== Object.keys(b).length){
       return false
     }
 
-    for (i = length; i-- !== 0;){
+    // check own props
+    while(i--){
       if (!hasOwnProp.call(b, keys[i])){
         return false
       }
     }
 
-    for (i = length; i-- !== 0;) {
-      key = keys[i]
-      if (!deepEqual(a[key], b[key])){
+    i = keys.length
+    while(i--){
+      if (!deepEqual(a[keys[i]], b[keys[i]])){
         return false
       }
     }
@@ -101,7 +103,7 @@ const clone = (target) => {
 
   if(target instanceof Array){
     const newArr = []
-    for(let i = 0; i < target.length; i++){
+    for(let i = 0, len = target.length; i < len; i++){
       newArr[i] = clone(target[i])
     }
     return newArr
