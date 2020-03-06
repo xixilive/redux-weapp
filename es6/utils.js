@@ -1,5 +1,4 @@
 const proto = Object.prototype
-const hasOwnProp = proto.hasOwnProperty
 
 const noop = function(){}
 
@@ -10,73 +9,35 @@ const typeOf = (v) => {
   return t.substr(8, t.length - 9)
 }
 
-const deepEqual = (a, b) => {
-  if (a === b){
-    return true
+const is = (x, y) => {
+  if (x === y) {
+    return x !== 0 || y !== 0 || 1 / x === 1 / y
+  } else {
+    return x !== x && y !== y
+  }
+}
+
+const shallowEqual = (objA, objB) => {
+  if (is(objA, objB)) return true
+  if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
+    return false
   }
 
-  if (a && b && typeof a == 'object' && typeof b == 'object') {
-    const arrA = typeOf(a) === 'Array', arrB = typeOf(b) === 'Array'
-    if (arrA !== arrB){
+  const keysA = Object.keys(objA)
+  const keysB = Object.keys(objB)
+
+  if (keysA.length !== keysB.length) return false
+
+  for (let i = 0; i < keysA.length; i++) {
+    if (
+      !Object.prototype.hasOwnProperty.call(objB, keysA[i]) ||
+      !is(objA[keysA[i]], objB[keysA[i]])
+    ) {
       return false
     }
-
-    let i
-    if (arrA && arrB) {
-      if (a.length !== b.length){
-        return false
-      }
-
-      i = a.length
-      while (i--){
-        if (!deepEqual(a[i], b[i])){
-          return false
-        }
-      }
-      return true
-    }
-    
-    const dateA = (a instanceof Date), dateB = (b instanceof Date)
-    if (dateA !== dateB){
-      return false
-    }
-
-    if (dateA && dateB){
-      return a.getTime() === b.getTime()
-    }
-
-    const regexpA = (a instanceof RegExp), regexpB = (b instanceof RegExp)
-    if (regexpA !== regexpB){
-      return false
-    }
-    if (regexpA && regexpB){
-      return a.toString() === b.toString()
-    }
-
-    const keys = Object.keys(a)
-    i = keys.length
-    if (i !== Object.keys(b).length){
-      return false
-    }
-
-    // check own props
-    while(i--){
-      if (!hasOwnProp.call(b, keys[i])){
-        return false
-      }
-    }
-
-    i = keys.length
-    while(i--){
-      if (!deepEqual(a[keys[i]], b[keys[i]])){
-        return false
-      }
-    }
-
-    return true
   }
 
-  return a !== a && b !== b
+  return true
 }
 
 // Clone JSON serializable object recursive
@@ -129,5 +90,5 @@ const callInContext = (fn, context, ...args) => {
 }
 
 export {
-  isFn, noop, deepEqual, clone, callInContext
+  isFn, noop, shallowEqual, clone, callInContext
 }

@@ -36,40 +36,9 @@ describe('Utils', () => {
     ).toBe(6)
   })
 
-  describe('#deepEqual', () => {
-    const obj1 = {
-      a: 1,
-      b: new Date(1525766513827),
-      c: [1,2,3],
-      d: {
-        e: 'str',
-        f: null,
-        g: [
-          {h: 1}
-        ]
-      }
-    }
-    const obj2 = {
-      a: 1,
-      b: new Date(1525766513827),
-      c: [1,2,3],
-      d: {
-        e: 'str',
-        f: null,
-        g: [
-          {h: 1}
-        ]
-      }
-    }
-
-    it('should be equals', () => {
-      expect(utils.deepEqual(obj1, obj2)).toBe(true)
-    })
-
-    it('should NOT be equals', () => {
-      expect(utils.deepEqual(obj1, {...obj2, a: 2})).toBe(false)
-    })
-  })
+  // describe('#shallowEqual', () => {
+    
+  // })
 
   describe('#clone', () => {
     it('should clone object recursively', () => {

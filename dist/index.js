@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    var nextState = mapState.apply(undefined, [state, initOptions].concat(args));
-	    if (!prevState || !(0, _utils.deepEqual)(nextState, prevState)) {
+	    if (!prevState || !(0, _utils.shallowEqual)(nextState, prevState)) {
 	      tmp = (0, _utils.clone)(nextState);
 	      context.onStateChange.call(context, nextState, (0, _utils.clone)(prevState) || {});
 	      prevState = tmp;
@@ -252,7 +252,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	var proto = Object.prototype;
-	var hasOwnProp = proto.hasOwnProperty;
 
 	var noop = function noop() {};
 
@@ -265,76 +264,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return t.substr(8, t.length - 9);
 	};
 
-	var deepEqual = function deepEqual(a, b) {
-	  if (a === b) {
-	    return true;
+	var is = function is(x, y) {
+	  if (x === y) {
+	    return x !== 0 || y !== 0 || 1 / x === 1 / y;
+	  } else {
+	    return x !== x && y !== y;
+	  }
+	};
+
+	var shallowEqual = function shallowEqual(objA, objB) {
+	  if (is(objA, objB)) return true;
+	  if ((typeof objA === 'undefined' ? 'undefined' : _typeof(objA)) !== 'object' || objA === null || (typeof objB === 'undefined' ? 'undefined' : _typeof(objB)) !== 'object' || objB === null) {
+	    return false;
 	  }
 
-	  if (a && b && (typeof a === 'undefined' ? 'undefined' : _typeof(a)) == 'object' && (typeof b === 'undefined' ? 'undefined' : _typeof(b)) == 'object') {
-	    var arrA = typeOf(a) === 'Array',
-	        arrB = typeOf(b) === 'Array';
-	    if (arrA !== arrB) {
+	  var keysA = Object.keys(objA);
+	  var keysB = Object.keys(objB);
+
+	  if (keysA.length !== keysB.length) return false;
+
+	  for (var i = 0; i < keysA.length; i++) {
+	    if (!Object.prototype.hasOwnProperty.call(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
 	      return false;
 	    }
-
-	    var i = void 0;
-	    if (arrA && arrB) {
-	      if (a.length !== b.length) {
-	        return false;
-	      }
-
-	      i = a.length;
-	      while (i--) {
-	        if (!deepEqual(a[i], b[i])) {
-	          return false;
-	        }
-	      }
-	      return true;
-	    }
-
-	    var dateA = a instanceof Date,
-	        dateB = b instanceof Date;
-	    if (dateA !== dateB) {
-	      return false;
-	    }
-
-	    if (dateA && dateB) {
-	      return a.getTime() === b.getTime();
-	    }
-
-	    var regexpA = a instanceof RegExp,
-	        regexpB = b instanceof RegExp;
-	    if (regexpA !== regexpB) {
-	      return false;
-	    }
-	    if (regexpA && regexpB) {
-	      return a.toString() === b.toString();
-	    }
-
-	    var keys = Object.keys(a);
-	    i = keys.length;
-	    if (i !== Object.keys(b).length) {
-	      return false;
-	    }
-
-	    // check own props
-	    while (i--) {
-	      if (!hasOwnProp.call(b, keys[i])) {
-	        return false;
-	      }
-	    }
-
-	    i = keys.length;
-	    while (i--) {
-	      if (!deepEqual(a[keys[i]], b[keys[i]])) {
-	        return false;
-	      }
-	    }
-
-	    return true;
 	  }
 
-	  return a !== a && b !== b;
+	  return true;
 	};
 
 	// Clone JSON serializable object recursive
@@ -393,7 +348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports.isFn = isFn;
 	exports.noop = noop;
-	exports.deepEqual = deepEqual;
+	exports.shallowEqual = shallowEqual;
 	exports.clone = clone;
 	exports.callInContext = callInContext;
 

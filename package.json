@@ -1,6 +1,6 @@
 {
   "name": "redux-weapp",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Redux-based State Management for Wechat applet(微信小程序, weapp)",
   "main": "dist/index.js",
   "scripts": {
