@@ -1,17 +1,16 @@
 import connect from '../es6/connect'
-import {store, bindActionCreators, changePageName} from './helper'
+import {store, bindActionCreators, updatePage} from './helper'
 
 const connectPage = (onStateChange) => {
   return connect.Page(
     store,
-    (state, options) => ({name: state.page.name, ...options}),
-    (dispatch) => ({changeName: bindActionCreators(changePageName, dispatch)})
+    (state) => state.page,
+    (dispatch) => ({update: bindActionCreators(updatePage, dispatch)})
   )({onStateChange})
 }
 
-describe('connect ', () => {
-
-  it('store with Page', () => {
+describe('connect page', () => {
+  it('connect store with Page', () => {
     const onStateChange = jest.fn()
     const page = connectPage(onStateChange)
     // life-cycle functions
@@ -20,54 +19,52 @@ describe('connect ', () => {
     expect(page.onShow).toBeInstanceOf(Function)
     expect(page.onHide).toBeInstanceOf(Function)
     expect(page.onStateChange).toBeInstanceOf(Function)
-    expect(page.changeName).toBeInstanceOf(Function)
+    expect(page.update).toBeInstanceOf(Function)
 
-    expect(store.getState().page.name).toBe('page')
+    expect(store.getState().page).toEqual({name: 'page', foo: {bar: 1}})
 
     // listener is not setup
     // Though store has changed, no callback got called yet
-    page.changeName('new page')
-    expect(store.getState().page.name).toBe('new page')
-    expect(onStateChange).not.toHaveBeenCalled()
-
-    page.onLoad({key: 'value'})
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page', key: 'value'}, {}) //calls: 1
-
-    page.changeName('new page2')
-    expect(store.getState().page.name).toBe('new page2')
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page2', key: 'value'}, {name: 'new page', key: 'value'})//calls: 2
-
-    page.onHide() // will pause to notify states change
-    page.changeName('new page3')
-    expect(store.getState().page.name).toBe('new page3')
-    expect(onStateChange).toHaveBeenCalledTimes(2)
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page2', key: 'value'}, {name: 'new page', key: 'value'})
-
-    page.onShow()
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page3', key: 'value'}, {name: 'new page2', key: 'value'}) // resumed from inactive
-
-    page.changeName('new page4')
-    expect(store.getState().page.name).toBe('new page4')
-    expect(onStateChange).toHaveBeenCalledTimes(4)
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page4', key: 'value'}, {name: 'new page3', key: 'value'})
-
-    page.changeName('new page4') //state not change
-    expect(onStateChange).toHaveBeenCalledTimes(4)
-
-    page.onUnload()
-    page.changeName('new page5')
-    expect(onStateChange).toHaveBeenCalledTimes(4)
+    page.update({name: 'page1'})
+    expect(store.getState().page).toEqual({name: 'page1', foo: {bar: 1}})
+    expect(onStateChange).toHaveBeenCalledTimes(0)
 
     page.onLoad()
-    expect(onStateChange).toHaveBeenCalledTimes(5)
-    expect(onStateChange).toHaveBeenLastCalledWith({name: 'new page5'}, {})
+    expect(onStateChange).toHaveBeenCalledTimes(1)
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'page1', foo: {bar: 1}}, undefined, 'INIT_SYNC')
+
+    page.update({foo: {bar: 2}})
+    expect(store.getState().page).toEqual({name: 'page1', foo: {bar: 2}})
+    expect(onStateChange).toHaveBeenCalledTimes(2)
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'page1', foo: {bar: 2}}, {name: 'page1', foo: {bar: 1}})
+
+    // should stash latest change
+    page.onHide()
+    page.update({foo: {bar: 3}})
+    page.update({name: 'page2', foo: {bar: 4}})
+    expect(onStateChange).toHaveBeenCalledTimes(2)
+    
+    // should pop stashed changes
+    page.onShow()
+    expect(onStateChange).toHaveBeenCalledTimes(3)
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'page2', foo: {bar: 4}}, {name: 'page1', foo: {bar: 3}})
+
+    // should discard listener
+    page.onUnload()
+    page.update({name: 'discarded'})
+    expect(onStateChange).toHaveBeenCalledTimes(3)
+
+    // should re-setup listener
+    page.onLoad()
+    expect(onStateChange).toHaveBeenCalledTimes(4)
+    expect(onStateChange).toHaveBeenLastCalledWith({name: 'discarded', foo: {bar: 4}}, undefined, 'INIT_SYNC')
   })
 
-  it('store with Page without mapState function', () => {
+  it('connect store with Page, but without mapState function', () => {
     const page = connect.Page(
       store,
       null,
-      (dispatch) => ({changeName: bindActionCreators(changePageName, dispatch)})
+      (dispatch) => ({update: bindActionCreators(updatePage, dispatch)})
     )({})
 
     expect(page.onLoad).toBe(undefined)
@@ -75,8 +72,7 @@ describe('connect ', () => {
     expect(page.onShow).toBe(undefined)
     expect(page.onHide).toBe(undefined)
     expect(page.onStateChange).toBe(undefined)
-    expect(page.changeName).toBeInstanceOf(Function)
-
-    expect(() => page.changeName('name')).not.toThrow()
+    expect(page.update).toBeInstanceOf(Function)
+    expect(() => page.update('name')).not.toThrow()
   })
 })

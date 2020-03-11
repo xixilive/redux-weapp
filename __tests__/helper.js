@@ -1,26 +1,26 @@
 import {createStore, bindActionCreators} from 'redux'
 
 const initState = {
-  app: {name: 'app'},
-  page: {name: 'page'}
+  app: {name: 'app', foo: {bar: 1}},
+  page: {name: 'page', foo: {bar: 1}}
 }
 
 const store = createStore(
-  (state = initState, action) => {
-    let key = (action.type.match(/CHANGE_(.+?)_NAME/) || [])[1]
+  (state = initState, {type, payload}) => {
+    let key = (type.match(/^UPDATE_(.+?)$/) || [])[1]
     if(key){
       key = key.toLowerCase()
       const current = state[key]
-      current.name = action.name
-      return {...state, [key]: current}
+      return {...state, [key]: {...current, ...payload}}
     }
     return state
   }
 )
 
-const changeAppName = (name) => ({type: 'CHANGE_APP_NAME', name})
-const changePageName = (name) => ({type: 'CHANGE_PAGE_NAME', name})
+const updateState = (key, payload) => ({type: `UPDATE_${key.toUpperCase()}`, payload})
+const updateApp = (payload) => updateState('APP', payload)
+const updatePage = (payload) => updateState('PAGE', payload)
 
 export {
-  store, changeAppName, changePageName, bindActionCreators
+  store, updateApp, updatePage, bindActionCreators
 }

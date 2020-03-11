@@ -1,45 +1,55 @@
-import {isFn, noop, shallowEqual, clone, callInContext} from './utils'
+import {isFn, noop, shallowEqual, callInContext} from './utils'
 
 let subscription = null
 const listeners = []
 
-const createListener = (context, store, mapState, initOptions = {}) => {
-  let prevState, tmp
+const createListener = (name = 'subscriber', context, store, mapState) => {
+  let prevState
   const listener = function(state, ...args){
-    const nextState = mapState(state, initOptions, ...args)
-    if(!prevState || !shallowEqual(nextState, prevState)){
-      tmp = clone(nextState)
-      context.onStateChange.call(context, nextState, clone(prevState) || {})
-      prevState = tmp
+    const nextState = mapState(state)
+    if(shallowEqual(nextState, prevState)) {
+      return
     }
+    if(listener.isActive) {
+      listener.stashed = null
+      context.onStateChange.call(context, nextState, prevState, ...args)
+    } else {
+      listener.stashed = [nextState, prevState]
+    }
+    prevState = nextState
   }
 
-  listener(store.getState()) // to sync init state
+  listener.index = listeners.push(listener) - 1
+  listener.key = `${name}-${listener.index}`
+  listener.stashed = null
   listener.isActive = true
+  listener(store.getState(), 'INIT_SYNC') // to sync init state
   return listener
 }
-
-const defaultMergeConfig = (config, overrides) => ({...config, ...overrides})
 
 const setupSubscription = (store) => {
   if(isFn(subscription)){
     return subscription
   }
-  const callback = () => {
-    listeners.filter(fn => fn.isActive).forEach(fn => fn(store.getState()))
-  }
-  return (subscription = store.subscribe(callback))
+  return (subscription = store.subscribe(() => {
+    const state = store.getState()
+    listeners.forEach(fn => fn(state))
+  }))
 }
 
-const injectChangeListenerStatus = (store, handler, listener, isActive) => {
+const injectChangeListenerStatus = (handler, listener, isActive) => {
   return function(){
-    if(listener){
-      const prev = listener.isActive
-      listener.isActive = isActive
-      if(!prev && isActive){
-        listener(store.getState(), ...arguments)
-      }
+    listener.isActive = isActive
+    if(listener.stashed) {
+      this.onStateChange(...listener.stashed)
     }
+    return callInContext(handler, this, arguments)
+  }
+}
+
+const injectRemoveListener = (handler, listener) => {
+  return function(){
+    listeners.splice(listener.index, 1)
     return callInContext(handler, this, arguments)
   }
 }
@@ -51,18 +61,15 @@ const injectOnStateChange = (handler) => {
 }
 
 const connect = (store, mapState, mapDispatch) => {
-  const resolveMapDispatch = () => {
-    return isFn(mapDispatch) ? mapDispatch(store.dispatch) : {}
-  }
+  const overrides = isFn(mapDispatch) ? mapDispatch(store.dispatch) : {}
 
   return (injectLifeCycle, config) => {
-    const mergedConfig = defaultMergeConfig(config, resolveMapDispatch())
+    const mergedConfig = {...config, ...overrides}
     if(!isFn(mapState)){
       return mergedConfig
     }
-
     setupSubscription(store)
-    return {...mergedConfig, ...injectLifeCycle(mergedConfig, mapState)}
+    return {...mergedConfig, ...injectLifeCycle(mergedConfig)}
   }
 }
 
@@ -73,23 +80,20 @@ const connectApp = (store, mapState, mapDispatch) => {
     const {onLaunch, onShow, onHide, onStateChange} = config
 
     return {
-      onLaunch: function(options){
-        const listener = createListener(this, store, mapState, options)
-        listener.index = listeners.push(listener) - 1
-
-        this.onShow = injectChangeListenerStatus(store, onShow, listener, true)
-        this.onHide = injectChangeListenerStatus(store, onHide, listener, false)
+      onLaunch: function(){
+        const listener = createListener('app', this, store, mapState)
+        this.onShow = injectChangeListenerStatus(onShow, listener, true)
+        this.onHide = injectChangeListenerStatus(onHide, listener, false)
         return callInContext(onLaunch, this, arguments)
       },
+
       onShow: isFn(onShow) ? onShow : noop,
       onHide: isFn(onHide) ? onHide : noop,
       onStateChange: injectOnStateChange(onStateChange)
     }
   }
 
-  return (config) => {
-    return factory(injectAppLifeCycle, config)
-  }
+  return config => factory(injectAppLifeCycle, config)
 }
 
 const connectPage = (store, mapState, mapDispatch) => {
@@ -99,17 +103,11 @@ const connectPage = (store, mapState, mapDispatch) => {
     const {onLoad, onUnload, onShow, onHide, onStateChange} = config
 
     return {
-      onLoad: function(options){
-        const listener = createListener(this, store, mapState, options)
-        listener.index = listeners.push(listener) - 1
-
-        this.onUnload = function(){
-          listeners.splice(listener.index, 1)
-          return callInContext(onUnload, this, arguments)
-        }
-
-        this.onShow = injectChangeListenerStatus(store, onShow, listener, true)
-        this.onHide = injectChangeListenerStatus(store, onHide, listener, false)
+      onLoad: function(){
+        const listener = createListener('page', this, store, mapState)
+        this.onShow = injectChangeListenerStatus(onShow, listener, true)
+        this.onHide = injectChangeListenerStatus(onHide, listener, false)
+        this.onUnload = injectRemoveListener(onUnload, listener)
         return callInContext(onLoad, this, arguments)
       },
 
@@ -120,9 +118,7 @@ const connectPage = (store, mapState, mapDispatch) => {
     }
   }
 
-  return (config) => {
-    return factory(injectPageLifeCycle, config)
-  }
+  return config => factory(injectPageLifeCycle, config)
 }
 
 export default {
